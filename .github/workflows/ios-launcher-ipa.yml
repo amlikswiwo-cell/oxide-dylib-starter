@@ -1,0 +1,43 @@
+name: Build Oxide Launcher IPA (unsigned)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ios-launcher/**"
+      - ".github/workflows/ios-launcher-ipa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build unsigned iOS app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/Payload
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          xcrun --sdk iphoneos swiftc \
+            -sdk "$SDK" \
+            -target arm64-apple-ios15.0 \
+            -framework SwiftUI \
+            -framework UIKit \
+            -framework UniformTypeIdentifiers \
+            -parse-as-library \
+            ios-launcher/main.swift \
+            -o build/Payload/OxideLauncher.app/OxideLauncher
+          cp ios-launcher/Info.plist build/Payload/OxideLauncher.app/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleExecutable OxideLauncher" build/Payload/OxideLauncher.app/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleSupportedPlatforms:0 iPhoneOS" build/Payload/OxideLauncher.app/Info.plist 2>/dev/null || true
+          chmod +x build/Payload/OxideLauncher.app/OxideLauncher
+          cd build
+          /usr/bin/zip -qry ../OxideLauncher-unsigned.ipa Payload
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OxideLauncher-unsigned-IPA
+          path: OxideLauncher-unsigned.ipa
+          if-no-files-found: error
