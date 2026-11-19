@@ -19,6 +19,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/Payload/OxideLauncher.app
+          test -f ios-launcher/main.swift
+          test -f ios-launcher/Info.plist
           SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
           xcrun --sdk iphoneos swiftc \
             -sdk "$SDK" \
