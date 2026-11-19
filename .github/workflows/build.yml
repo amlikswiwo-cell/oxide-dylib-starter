@@ -7,20 +7,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang git perl make dpkg-dev fakeroot cargo
-          cargo install ldid
+          brew update
+          brew install ldid dpkg
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
           echo "$HOME/theos/bin" >> "$GITHUB_PATH"
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Install iOS SDK
         run: |
