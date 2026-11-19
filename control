@@ -1,0 +1,8 @@
+Package: com.example.oxideoverlaystarter
+Name: Oxide Overlay Starter
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: UI-only overlay starter template; no gameplay modification.
+Maintainer: Local build
+Author: Local build
+Section: Tweaks
