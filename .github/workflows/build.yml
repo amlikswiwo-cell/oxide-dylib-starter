@@ -1,0 +1,42 @@
+name: Build iOS tweak template
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          brew install make ldid dpkg
+          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+          echo "$HOME/theos/bin" >> "$GITHUB_PATH"
+
+      - name: Install iOS SDK
+        run: |
+          git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
+          mkdir -p "$THEOS/sdks"
+          cp -R "$RUNNER_TEMP/theos-sdks/iPhoneOS"* "$THEOS/sdks/" || true
+          if ! ls "$THEOS/sdks" | grep -q '^iPhoneOS'; then
+            echo "No iPhoneOS SDK was installed; stopping rather than producing a misleading artifact."
+            exit 1
+          fi
+
+      - name: Compile template
+        run: |
+          make package FINALPACKAGE=1
+          find packages -maxdepth 1 -type f -print
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oxide-overlay-template-package
+          path: packages/*
+          if-no-files-found: error
