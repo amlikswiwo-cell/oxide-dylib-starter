@@ -7,14 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install build tools
         run: |
-          brew install make ldid dpkg
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang git perl make ldid dpkg-dev fakeroot
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
           echo "$HOME/theos/bin" >> "$GITHUB_PATH"
@@ -22,10 +23,10 @@ jobs:
       - name: Install iOS SDK
         run: |
           git clone --depth 1 https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
-          mkdir -p "$THEOS/sdks"
-          cp -R "$RUNNER_TEMP/theos-sdks/iPhoneOS"* "$THEOS/sdks/" || true
-          if ! ls "$THEOS/sdks" | grep -q '^iPhoneOS'; then
-            echo "No iPhoneOS SDK was installed; stopping rather than producing a misleading artifact."
+          mkdir -p "$HOME/theos/sdks"
+          find "$RUNNER_TEMP/theos-sdks" -maxdepth 1 -type d -name 'iPhoneOS*.sdk' -exec cp -R {} "$HOME/theos/sdks/" \;
+          if ! find "$HOME/theos/sdks" -maxdepth 1 -type d -name 'iPhoneOS*.sdk' | grep -q .; then
+            echo "No iPhoneOS SDK was installed."
             exit 1
           fi
 
