@@ -15,10 +15,12 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang git perl make ldid dpkg-dev fakeroot
+          sudo apt-get install -y build-essential clang git perl make dpkg-dev fakeroot cargo
+          cargo install ldid
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
           echo "$HOME/theos/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Install iOS SDK
         run: |
